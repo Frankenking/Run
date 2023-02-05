@@ -18,7 +18,6 @@ func get_input():
 	var input_dir = Vector3()
 	if Input.is_action_just_pressed("esc"):
 		Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
-		get_tree().change_scene("res://TSCN/TitleScreen.tscn")
 		
 	if Input.is_action_just_pressed("up"):
 		jump = true
