@@ -2,12 +2,26 @@
 
 [ext_resource path="res://assets/textures/Play.png" type="Texture" id=1]
 [ext_resource path="res://assets/textures/Quit.png" type="Texture" id=2]
-[ext_resource path="res://scenes/Title Screen.gd" type="Script" id=3]
+
+[sub_resource type="GDScript" id=1]
+script/source = "extends Control
+
+func _ready():
+	pass 
+
+
+func _on_Play_pressed():
+	get_tree().change_scene(\"res://scenes/Main.tscn\")
+
+
+func _on_Quit_pressed():
+	get_tree().quit()
+"
 
 [node name="Title Screen" type="Control"]
 anchor_right = 1.0
 anchor_bottom = 1.0
-script = ExtResource( 3 )
+script = SubResource( 1 )
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
 anchor_left = 0.5
