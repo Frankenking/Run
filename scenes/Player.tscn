@@ -1,10 +1,20 @@
-[gd_scene load_steps=4 format=2]
+[gd_scene load_steps=9 format=2]
 
 [ext_resource path="res://scenes/Player.gd" type="Script" id=1]
+[ext_resource path="res://assets/sounds/walk.mp3" type="AudioStream" id=2]
+[ext_resource path="res://assets/textures/R.png" type="Texture" id=3]
+[ext_resource path="res://assets/textures/Esc.png" type="Texture" id=4]
+[ext_resource path="res://assets/models/Rayban_v001.gltf" type="PackedScene" id=5]
 
-[sub_resource type="CapsuleShape" id=1]
+[sub_resource type="BoxShape" id=3]
+
+[sub_resource type="SpatialMaterial" id=4]
+albedo_color = Color( 0.85098, 0.027451, 0.027451, 1 )
+metallic = 1.0
+metallic_specular = 1.0
 
 [sub_resource type="CapsuleMesh" id=2]
+material = SubResource( 4 )
 
 [node name="Player" type="KinematicBody"]
 script = ExtResource( 1 )
@@ -14,16 +24,36 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.20002, -0.282992 )
 
 [node name="Camera" type="Camera" parent="Pivot"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.491641 )
+far = 176.9
 
 [node name="Timer" type="Timer" parent="."]
 one_shot = true
 
 [node name="walking" type="AudioStreamPlayer" parent="."]
+stream = ExtResource( 2 )
 
 [node name="CollisionShape" type="CollisionShape" parent="."]
 transform = Transform( 1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0 )
-shape = SubResource( 1 )
+shape = SubResource( 3 )
 
 [node name="Mesh" type="MeshInstance" parent="."]
 transform = Transform( 1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0 )
 mesh = SubResource( 2 )
+
+[node name="Rayban_v001" parent="Mesh" instance=ExtResource( 5 )]
+transform = Transform( -0.1, -8.74228e-09, 3.82137e-16, 0, -4.37114e-09, -0.1, 8.74228e-09, -0.1, 4.37114e-09, 0, -0.647, -0.742 )
+
+[node name="UI" type="Control" parent="."]
+margin_right = 40.0
+margin_bottom = 40.0
+
+[node name="Esc" type="TextureRect" parent="UI"]
+margin_right = 40.0
+margin_bottom = 40.0
+texture = ExtResource( 4 )
+
+[node name="R" type="TextureRect" parent="UI"]
+margin_top = 50.0
+margin_right = 40.0
+margin_bottom = 40.0
+texture = ExtResource( 3 )

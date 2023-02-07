@@ -18,6 +18,10 @@ func get_input():
 	var input_dir = Vector3()
 	if Input.is_action_just_pressed("esc"):
 		Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+		get_tree().change_scene("res://scenes/Title Screen.tscn")
+	
+	if Input.is_action_just_pressed("r"):
+		get_tree().change_scene("res://scenes/Main.tscn")
 		
 	if Input.is_action_just_pressed("up"):
 		jump = true
@@ -40,14 +44,14 @@ func get_input():
 					
 	if Input.is_action_pressed("left"):
 		if is_on_floor() != true:
-			input_dir += -global_transform.basis.x * 1.2
+			input_dir += -global_transform.basis.x * 1.45
 		else:
 			input_dir += -global_transform.basis.x		
 		$Pivot.rotation.z = 0.0075
 		
 	if Input.is_action_pressed("right"):
 		if is_on_floor() != true:
-			input_dir += global_transform.basis.x * 1.2
+			input_dir += global_transform.basis.x * 1.45
 		else:
 			input_dir += global_transform.basis.x		
 		$Pivot.rotation.z = -0.0075
