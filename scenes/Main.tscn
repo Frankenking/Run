@@ -1,9 +1,10 @@
-[gd_scene load_steps=10 format=2]
+[gd_scene load_steps=12 format=2]
 
 [ext_resource path="res://scenes/Player.tscn" type="PackedScene" id=1]
 [ext_resource path="res://assets/textures/Epic_BlueSunset_EquiRect_flat.png" type="Texture" id=2]
 [ext_resource path="res://assets/textures/d3byyeg-c060198a-c568-43c3-ad0a-43f0035e4e44.jpg" type="Texture" id=3]
 [ext_resource path="res://scenes/TimeLabel.gd" type="Script" id=4]
+[ext_resource path="res://assets/textures/940-normal.jpg" type="Texture" id=5]
 
 [sub_resource type="PanoramaSky" id=4]
 panorama = ExtResource( 2 )
@@ -21,13 +22,24 @@ albedo_texture = ExtResource( 3 )
 flags_transparent = true
 flags_vertex_lighting = true
 albedo_color = Color( 0.0431373, 0.160784, 0.360784, 0.992157 )
+metallic = 1.0
 metallic_specular = 0.0
+emission_enabled = true
+emission = Color( 0.00784314, 0.00784314, 0.0627451, 1 )
+emission_energy = 5.39
+emission_operator = 0
+emission_on_uv2 = true
+normal_enabled = true
+normal_scale = 16.0
+normal_texture = ExtResource( 5 )
 proximity_fade_enable = true
 proximity_fade_distance = 1.5
 
 [sub_resource type="PlaneMesh" id=9]
 material = SubResource( 8 )
 size = Vector2( 350, 350 )
+
+[sub_resource type="BoxShape" id=10]
 
 [node name="Main" type="Spatial"]
 
@@ -39,8 +51,8 @@ transform = Transform( 0.999926, 9.77816e-09, 0.0121995, -0.00439101, 0.932979, 
 
 [node name="Player" parent="." instance=ExtResource( 1 )]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.56823, 0 )
-gravity = -10.0
-jumpstr = 6.0
+gravity = -12.0
+jumpstr = 6.5
 
 [node name="CSGBox" type="CSGBox" parent="."]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -15.2806, 0 )
@@ -107,7 +119,7 @@ depth = 8.0
 material = SubResource( 7 )
 
 [node name="CSGMesh" type="CSGMesh" parent="."]
-use_collision = true
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.5, 0 )
 mesh = SubResource( 9 )
 
 [node name="Stopwatch" type="Timer" parent="."]
@@ -118,3 +130,17 @@ transform = Transform( -4.37114e-08, 0.707107, 0.707107, 0, 0.707107, -0.707107,
 pixel_size = 1.1428
 text = "null"
 script = ExtResource( 4 )
+
+[node name="EndLabel" type="Label3D" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 14.118, -80.1054 )
+pixel_size = 0.2
+text = "End"
+
+[node name="Area" type="Area" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 13.6661, -78.0429 )
+
+[node name="CollisionShape" type="CollisionShape" parent="Area"]
+transform = Transform( 5, 0, 0, 0, 1, 0, 0, 0, 5, 0.144102, -1.50852, -0.159065 )
+shape = SubResource( 10 )
+
+[connection signal="body_entered" from="Area" to="TimeLabel" method="_on_Area_body_entered"]

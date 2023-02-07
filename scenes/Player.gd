@@ -5,7 +5,7 @@ export var gravity = -9.81
 export var max_speed = 8
 export var mouse_sensitivity = 0.005
 export var jumpstr = 4.2
-export var sprint_speed_multiplier = 1.4
+export var sprint_speed_multiplier = 1.5
 
 var velocity = Vector3()
 var jump = false
@@ -28,8 +28,10 @@ func get_input():
 
 	if Input.is_action_just_pressed("lctrl"):
 		$Pivot/Camera.translate(Vector3(0, -0.3, 0))
+		$".".translate(Vector3(0, 0.3, 0))
 	if Input.is_action_just_released("lctrl"):
 		$Pivot/Camera.translate(Vector3(0, 0.3, 0))
+		$".".translate(Vector3(0, -0.3, 0))
 	if Input.is_action_pressed("forward"):
 		if is_on_floor() != true:
 			input_dir += -global_transform.basis.z * 1.2
@@ -38,23 +40,23 @@ func get_input():
 			
 	if Input.is_action_pressed("backward"):
 		if is_on_floor() != true:
-			input_dir += global_transform.basis.z * 1.2
+			input_dir += global_transform.basis.z * 1.5
 		else:
 			input_dir += global_transform.basis.z
 					
 	if Input.is_action_pressed("left"):
 		if is_on_floor() != true:
-			input_dir += -global_transform.basis.x * 1.45
+			input_dir += -global_transform.basis.x * 1.25
 		else:
 			input_dir += -global_transform.basis.x		
-		$Pivot.rotation.z = 0.0075
+		$Pivot.rotation.z = 0.01
 		
 	if Input.is_action_pressed("right"):
 		if is_on_floor() != true:
-			input_dir += global_transform.basis.x * 1.45
+			input_dir += global_transform.basis.x * 1.25
 		else:
 			input_dir += global_transform.basis.x		
-		$Pivot.rotation.z = -0.0075
+		$Pivot.rotation.z = -0.01
 		
 	if Input.is_action_just_released("right"):
 		$Pivot.rotation.z = 0
@@ -98,5 +100,6 @@ func _physics_process(delta):
 	velocity = move_and_slide(velocity, Vector3.UP, true)
 	if jump and is_on_floor():
 		velocity.y = jumpstr
-
-		
+	
+	if $".".translation.y < -1.5:
+		get_tree().change_scene("res://scenes/Main.tscn")

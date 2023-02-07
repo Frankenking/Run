@@ -16,3 +16,7 @@ func _process(delta):
 			currentTime += 0.1
 			$".".set_text("Time: " + String(currentTime))
 			
+
+
+func _on_Area_body_entered(body):
+	finished = true
