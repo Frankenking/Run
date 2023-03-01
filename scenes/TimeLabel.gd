@@ -18,5 +18,5 @@ func _process(delta):
 			
 
 
-func _on_Area_body_entered(body):
+func _on_Area_body_entered(): #body
 	finished = true

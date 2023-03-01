@@ -24,7 +24,7 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.20002, -0.282992 )
 
 [node name="Camera" type="Camera" parent="Pivot"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.918717, 3.59642 )
-far = 176.9
+far = 8192.0
 
 [node name="Timer" type="Timer" parent="."]
 one_shot = true

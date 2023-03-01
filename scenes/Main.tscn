@@ -1,10 +1,9 @@
-[gd_scene load_steps=12 format=2]
+[gd_scene load_steps=22 format=2]
 
 [ext_resource path="res://scenes/Player.tscn" type="PackedScene" id=1]
 [ext_resource path="res://assets/textures/Epic_BlueSunset_EquiRect_flat.png" type="Texture" id=2]
-[ext_resource path="res://assets/textures/d3byyeg-c060198a-c568-43c3-ad0a-43f0035e4e44.jpg" type="Texture" id=3]
+[ext_resource path="res://assets/textures/ground.tres" type="Material" id=3]
 [ext_resource path="res://scenes/TimeLabel.gd" type="Script" id=4]
-[ext_resource path="res://assets/textures/940-normal.jpg" type="Texture" id=5]
 
 [sub_resource type="PanoramaSky" id=4]
 panorama = ExtResource( 2 )
@@ -15,31 +14,180 @@ background_sky = SubResource( 4 )
 ambient_light_color = Color( 1, 1, 1, 1 )
 fog_enabled = true
 
-[sub_resource type="SpatialMaterial" id=7]
-albedo_texture = ExtResource( 3 )
-
-[sub_resource type="SpatialMaterial" id=8]
-flags_transparent = true
-flags_vertex_lighting = true
-albedo_color = Color( 0.0431373, 0.160784, 0.360784, 0.992157 )
-metallic = 1.0
-metallic_specular = 0.0
-emission_enabled = true
-emission = Color( 0.00784314, 0.00784314, 0.0627451, 1 )
-emission_energy = 5.39
-emission_operator = 0
-emission_on_uv2 = true
-normal_enabled = true
-normal_scale = 16.0
-normal_texture = ExtResource( 5 )
-proximity_fade_enable = true
-proximity_fade_distance = 1.5
-
-[sub_resource type="PlaneMesh" id=9]
-material = SubResource( 8 )
-size = Vector2( 350, 350 )
-
 [sub_resource type="BoxShape" id=10]
+
+[sub_resource type="SpatialMaterial" id=27]
+albedo_color = Color( 1, 0.913725, 0.0156863, 1 )
+metallic = 1.0
+
+[sub_resource type="Shader" id=12]
+code = "shader_type spatial;
+render_mode blend_mix, specular_phong;
+
+uniform float speed : hint_range(-1,1) = 0.0;
+
+//colors
+uniform sampler2D noise1; //add Godot noise here
+uniform sampler2D noise2; //add Godot noise here
+uniform sampler2D normalmap : hint_normal; //add Godot noise here, enable as_normalmap
+uniform vec4 color : hint_color;
+uniform vec4 edge_color : hint_color;
+
+//foam
+uniform float edge_scale = 0.25;
+uniform float near = 0.1;
+uniform float far = 100.0f;
+
+//waves
+uniform vec2 wave_strengh = vec2(0.5, 0.25);
+uniform vec2 wave_frequency = vec2(12.0, 12.0);
+uniform vec2 time_factor = vec2(1.0, 2.0);
+
+
+
+float rim(float depth){
+	depth = 2.0f * depth - 1.0f;
+	return near * far / (far + depth * (near - far));
+}
+
+
+float waves(vec2 pos, float time){
+	return (wave_strengh.y * sin(pos.y * wave_frequency.y + time * time_factor.y)) + (wave_strengh.x * sin(pos.x * wave_frequency.x + time * time_factor.x));
+}
+
+
+void vertex(){
+	VERTEX.y += waves(VERTEX.xy, TIME);
+}
+
+
+void fragment(){
+	float time = TIME * speed;
+	vec3 n1 = texture(noise1, UV + time).rgb;
+	vec3 n2 = texture(noise2, UV - time * 0.2).rgb;
+	
+	vec2 uv_movement = UV * 4.0f;
+	uv_movement += TIME * speed * 4.0f;
+	
+	float sum = (n1.r + n2.r) - 1.0f;
+	
+	
+	float z_depth = rim(texture(DEPTH_TEXTURE, SCREEN_UV).x);
+	float z_pos = rim(FRAGCOORD.z);
+	float diff = z_depth - z_pos;
+	
+	vec2 displacement = vec2(sum * 0.05);
+	diff += displacement.x * 50.0f;
+	
+	
+	vec4 col = mix(edge_color, color, step(edge_scale, diff));
+	
+	vec4 alpha = vec4(1.0);
+	alpha = texture(SCREEN_TEXTURE, SCREEN_UV + displacement);
+	
+	
+	float fin = 0.0;
+	if (sum > 0.0 && sum < 0.4) fin = 0.1;
+	if (sum > 0.4 && sum < 0.8) fin = 0.0;
+	if (sum > 0.8) fin = 1.0f;
+	
+	ALBEDO = vec3(fin) + mix(alpha.rgb, col.rgb, color.a);
+	
+	NORMALMAP = texture(normalmap, uv_movement).rgb;
+	ROUGHNESS = 0.1;
+	SPECULAR = 1.0f;
+}"
+
+[sub_resource type="OpenSimplexNoise" id=14]
+
+[sub_resource type="NoiseTexture" id=15]
+seamless = true
+as_normalmap = true
+bump_strength = 32.0
+noise = SubResource( 14 )
+
+[sub_resource type="OpenSimplexNoise" id=16]
+
+[sub_resource type="NoiseTexture" id=17]
+seamless = true
+as_normalmap = true
+bump_strength = 32.0
+noise = SubResource( 16 )
+
+[sub_resource type="OpenSimplexNoise" id=18]
+period = 143.7
+persistence = 1.0
+lacunarity = 4.0
+
+[sub_resource type="NoiseTexture" id=19]
+seamless = true
+as_normalmap = true
+bump_strength = 0.0
+noise = SubResource( 18 )
+
+[sub_resource type="ShaderMaterial" id=13]
+shader = SubResource( 12 )
+shader_param/speed = 0.001
+shader_param/color = Color( 0, 0.701961, 0.756863, 1 )
+shader_param/edge_color = Color( 0.709804, 0.784314, 1, 1 )
+shader_param/edge_scale = 0.25
+shader_param/near = 0.1
+shader_param/far = 100.0
+shader_param/wave_strengh = Vector2( 0.3, 0.25 )
+shader_param/wave_frequency = Vector2( 12, 12 )
+shader_param/time_factor = Vector2( 1, 2 )
+shader_param/noise1 = SubResource( 15 )
+shader_param/noise2 = SubResource( 17 )
+shader_param/normalmap = SubResource( 19 )
+
+[sub_resource type="PlaneMesh" id=11]
+material = SubResource( 13 )
+size = Vector2( 2500, 2500 )
+subdivide_width = 10
+subdivide_depth = 10
+
+[sub_resource type="CubeMesh" id=23]
+material = ExtResource( 3 )
+size = Vector3( 40, 10, 40 )
+subdivide_width = 1
+subdivide_height = 1
+subdivide_depth = 1
+
+[sub_resource type="CubeMesh" id=24]
+material = ExtResource( 3 )
+size = Vector3( 5, 1.5, 5 )
+
+[sub_resource type="Animation" id=25]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:translation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ Vector3( -3.67733, 14.4106, -37.486 ) ]
+}
+
+[sub_resource type="Animation" id=26]
+resource_name = "m"
+length = 5.0
+loop = true
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:translation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = false
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 2.5, 5 ),
+"transitions": PoolRealArray( 1, 1, 1 ),
+"update": 0,
+"values": [ Vector3( -10, 10, -40 ), Vector3( 5, 10, -40 ), Vector3( -10, 10, -40 ) ]
+}
 
 [node name="Main" type="Spatial"]
 
@@ -50,97 +198,98 @@ environment = SubResource( 3 )
 transform = Transform( 0.999926, 9.77816e-09, 0.0121995, -0.00439101, 0.932979, 0.359905, -0.0113819, -0.359932, 0.932909, -0.068815, 4.74542, 0.45839 )
 
 [node name="Player" parent="." instance=ExtResource( 1 )]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.56823, 0 )
-gravity = -12.0
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 7.45826, 10.7252 )
+gravity = -10.0
+max_speed = 6
 jumpstr = 6.5
-
-[node name="CSGBox" type="CSGBox" parent="."]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -15.2806, 0 )
-use_collision = true
-width = 8.0
-height = 30.671
-depth = 8.0
-material = SubResource( 7 )
-
-[node name="CSGBox2" type="CSGBox" parent="."]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -9.06986, -13.9056, -12.5113 )
-use_collision = true
-width = 8.0
-height = 30.671
-depth = 8.0
-material = SubResource( 7 )
-
-[node name="CSGBox3" type="CSGBox" parent="."]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 7.38935, -12.4315, -21.3905 )
-use_collision = true
-width = 8.0
-height = 30.671
-depth = 8.0
-material = SubResource( 7 )
-
-[node name="CSGBox4" type="CSGBox" parent="."]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -9.40581, -11.2477, -30.0361 )
-use_collision = true
-width = 8.0
-height = 30.671
-depth = 8.0
-material = SubResource( 7 )
-
-[node name="CSGBox5" type="CSGBox" parent="."]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 6.73999, -9.60175, -41.6862 )
-use_collision = true
-width = 8.0
-height = 30.671
-depth = 8.0
-material = SubResource( 7 )
-
-[node name="CSGBox6" type="CSGBox" parent="."]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -8.16969, -8.10456, -48.2361 )
-use_collision = true
-width = 8.0
-height = 30.671
-depth = 8.0
-material = SubResource( 7 )
-
-[node name="CSGBox7" type="CSGBox" parent="."]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 7.47684, -6.68744, -57.9876 )
-use_collision = true
-width = 8.0
-height = 30.671
-depth = 8.0
-material = SubResource( 7 )
-
-[node name="CSGBox8" type="CSGBox" parent="."]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.192396, -4.72188, -77.5464 )
-use_collision = true
-width = 8.0
-height = 29.8596
-depth = 8.0
-material = SubResource( 7 )
-
-[node name="CSGMesh" type="CSGMesh" parent="."]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.5, 0 )
-mesh = SubResource( 9 )
 
 [node name="Stopwatch" type="Timer" parent="."]
 one_shot = true
 
 [node name="TimeLabel" type="Label3D" parent="."]
-transform = Transform( -4.37114e-08, 0.707107, 0.707107, 0, 0.707107, -0.707107, -1, -3.09086e-08, -3.09086e-08, -35.653, 28.0152, -17.2078 )
-pixel_size = 1.1428
+transform = Transform( -4.37114e-08, 0.707107, 0.707107, 0, 0.707107, -0.707107, -1, -3.09086e-08, -3.09086e-08, -469.64, 191.901, -17.2078 )
+pixel_size = 2.2755
 text = "null"
 script = ExtResource( 4 )
 
-[node name="EndLabel" type="Label3D" parent="."]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 14.118, -80.1054 )
-pixel_size = 0.2
-text = "End"
+[node name="EndArea" type="Area" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 14.5323, -58.2821 )
 
-[node name="Area" type="Area" parent="."]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 13.6661, -78.0429 )
-
-[node name="CollisionShape" type="CollisionShape" parent="Area"]
+[node name="CollisionShape" type="CollisionShape" parent="EndArea"]
 transform = Transform( 5, 0, 0, 0, 1, 0, 0, 0, 5, 0.144102, -1.50852, -0.159065 )
 shape = SubResource( 10 )
 
-[connection signal="body_entered" from="Area" to="TimeLabel" method="_on_Area_body_entered"]
+[node name="EndLabel" type="Label3D" parent="EndArea"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4519, -2.0625 )
+pixel_size = 0.2
+text = "End"
+
+[node name="CSGBox" type="CSGBox" parent="EndArea"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -6.93396, 0 )
+width = 15.984
+height = 1.386
+depth = 11.076
+material = SubResource( 27 )
+
+[node name="Water" type="MeshInstance" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.19443, 0 )
+mesh = SubResource( 11 )
+
+[node name="Blocks" type="Spatial" parent="."]
+
+[node name="Start" type="CSGMesh" parent="Blocks"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.105983, -4.76837e-07, 0.043129 )
+use_collision = true
+mesh = SubResource( 23 )
+
+[node name="Step" type="CSGMesh" parent="Blocks"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 7.24654, 5.45789, -4.61182 )
+use_collision = true
+mesh = SubResource( 24 )
+
+[node name="Step2" type="CSGMesh" parent="Blocks"]
+transform = Transform( 1, 0, 0, 0, 2, 0, 0, 0, 1, 0.63325, 6.53918, -10.7761 )
+use_collision = true
+mesh = SubResource( 24 )
+
+[node name="Step3" type="CSGMesh" parent="Blocks"]
+transform = Transform( 0.633039, 0.955223, 0.736365, -0.32165, 3.78548, -0.0303953, -0.704133, -0.870441, 0.675901, -4.19516, 6.66839, -1.11259 )
+use_collision = true
+mesh = SubResource( 24 )
+
+[node name="Step4" type="CSGMesh" parent="Blocks"]
+transform = Transform( 0.637532, -1.88117, 0.67231, 0, 4.36325, 0.488347, -0.770424, -1.55668, 0.556342, 7.18747, 6.9528, 5.98552 )
+use_collision = true
+mesh = SubResource( 24 )
+
+[node name="Step5" type="CSGMesh" parent="Blocks"]
+transform = Transform( 0.851852, -0.424917, 0.306257, 0.438262, 0.898426, 0.0274998, -0.286835, 0.110795, 0.951551, 12.8009, 12.3524, -5.35201 )
+use_collision = true
+mesh = SubResource( 24 )
+
+[node name="Step6" type="CSGMesh" parent="Blocks"]
+transform = Transform( 0.785721, -0.238551, 0.570733, 0.3194, 0.946595, -0.044062, -0.529742, 0.216913, 0.819953, 9.13218, 12.9856, -13.4207 )
+use_collision = true
+mesh = SubResource( 24 )
+
+[node name="Step7" type="CSGMesh" parent="Blocks"]
+transform = Transform( 0.812348, -0.138218, 0.566557, 0.173642, 0.98477, -0.00872654, -0.556723, 0.105467, 0.823976, 2.58896, 12.9422, -21.713 )
+use_collision = true
+mesh = SubResource( 24 )
+
+[node name="Step8" type="CSGMesh" parent="Blocks"]
+transform = Transform( 0.910885, 0, 0.412659, 0, 1, 0, -0.412659, 0, 0.910885, -1.28018, 12.0295, -29.1013 )
+use_collision = true
+mesh = SubResource( 24 )
+
+[node name="Step9" type="CSGMesh" parent="Blocks"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -3.67733, 14.4106, -37.486 )
+use_collision = true
+mesh = SubResource( 24 )
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="Blocks/Step9"]
+autoplay = "m"
+anims/RESET = SubResource( 25 )
+anims/m = SubResource( 26 )
+
+[connection signal="body_entered" from="EndArea" to="TimeLabel" method="_on_Area_body_entered"]
