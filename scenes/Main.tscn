@@ -216,7 +216,7 @@ script = ExtResource( 4 )
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 14.5323, -58.2821 )
 
 [node name="CollisionShape" type="CollisionShape" parent="EndArea"]
-transform = Transform( 5, 0, 0, 0, 1, 0, 0, 0, 5, 0.144102, -1.50852, -0.159065 )
+transform = Transform( 5, 0, 0, 0, 1, 0, 0, 0, 5, 0.144102, -5.40811, -0.159065 )
 shape = SubResource( 10 )
 
 [node name="EndLabel" type="Label3D" parent="EndArea"]
@@ -226,6 +226,7 @@ text = "End"
 
 [node name="CSGBox" type="CSGBox" parent="EndArea"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -6.93396, 0 )
+use_collision = true
 width = 15.984
 height = 1.386
 depth = 11.076
