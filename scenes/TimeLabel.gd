@@ -3,13 +3,9 @@ extends Label3D
 var currentTime: float = 0.0
 var finished: bool = false
 
-	
-func _ready():
-	pass
-	
 func _process(delta):
 	if finished:
-		pass
+		print("fin")
 	else:
 		if $"../Stopwatch".time_left <= 0:
 			$"../Stopwatch".start(0.1)
@@ -18,5 +14,6 @@ func _process(delta):
 			
 
 
-func _on_Area_body_entered(): #body
+
+func _on_EndArea_body_entered(body):
 	finished = true

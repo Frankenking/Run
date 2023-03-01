@@ -1,9 +1,10 @@
-[gd_scene load_steps=22 format=2]
+[gd_scene load_steps=21 format=2]
 
 [ext_resource path="res://scenes/Player.tscn" type="PackedScene" id=1]
 [ext_resource path="res://assets/textures/Epic_BlueSunset_EquiRect_flat.png" type="Texture" id=2]
 [ext_resource path="res://assets/textures/ground.tres" type="Material" id=3]
 [ext_resource path="res://scenes/TimeLabel.gd" type="Script" id=4]
+[ext_resource path="res://assets/anims/scenesMoving Platformback.tres" type="Animation" id=5]
 
 [sub_resource type="PanoramaSky" id=4]
 panorama = ExtResource( 2 )
@@ -157,38 +158,6 @@ subdivide_depth = 1
 material = ExtResource( 3 )
 size = Vector3( 5, 1.5, 5 )
 
-[sub_resource type="Animation" id=25]
-length = 0.001
-tracks/0/type = "value"
-tracks/0/path = NodePath(".:translation")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/keys = {
-"times": PoolRealArray( 0 ),
-"transitions": PoolRealArray( 1 ),
-"update": 0,
-"values": [ Vector3( -3.67733, 14.4106, -37.486 ) ]
-}
-
-[sub_resource type="Animation" id=26]
-resource_name = "m"
-length = 5.0
-loop = true
-tracks/0/type = "value"
-tracks/0/path = NodePath(".:translation")
-tracks/0/interp = 1
-tracks/0/loop_wrap = false
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/keys = {
-"times": PoolRealArray( 0, 2.5, 5 ),
-"transitions": PoolRealArray( 1, 1, 1 ),
-"update": 0,
-"values": [ Vector3( -10, 10, -40 ), Vector3( 5, 10, -40 ), Vector3( -10, 10, -40 ) ]
-}
-
 [node name="Main" type="Spatial"]
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
@@ -200,7 +169,6 @@ transform = Transform( 0.999926, 9.77816e-09, 0.0121995, -0.00439101, 0.932979, 
 [node name="Player" parent="." instance=ExtResource( 1 )]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 7.45826, 10.7252 )
 gravity = -10.0
-max_speed = 6
 jumpstr = 6.5
 
 [node name="Stopwatch" type="Timer" parent="."]
@@ -209,23 +177,25 @@ one_shot = true
 [node name="TimeLabel" type="Label3D" parent="."]
 transform = Transform( -4.37114e-08, 0.707107, 0.707107, 0, 0.707107, -0.707107, -1, -3.09086e-08, -3.09086e-08, -469.64, 191.901, -17.2078 )
 pixel_size = 2.2755
+render_priority = 1
 text = "null"
 script = ExtResource( 4 )
 
 [node name="EndArea" type="Area" parent="."]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 14.5323, -58.2821 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 14.5323, -81.9215 )
 
 [node name="CollisionShape" type="CollisionShape" parent="EndArea"]
-transform = Transform( 5, 0, 0, 0, 1, 0, 0, 0, 5, 0.144102, -5.40811, -0.159065 )
+transform = Transform( 5, 0, 0, 0, 1, 0, 0, 0, 5, 0.144102, -4.3061, -0.159065 )
 shape = SubResource( 10 )
 
 [node name="EndLabel" type="Label3D" parent="EndArea"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4519, -2.0625 )
 pixel_size = 0.2
+render_priority = 1
 text = "End"
 
 [node name="CSGBox" type="CSGBox" parent="EndArea"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -6.93396, 0 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -8.54995, 0 )
 use_collision = true
 width = 15.984
 height = 1.386
@@ -284,13 +254,12 @@ use_collision = true
 mesh = SubResource( 24 )
 
 [node name="Step9" type="CSGMesh" parent="Blocks"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -3.67733, 14.4106, -37.486 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, -40 )
 use_collision = true
 mesh = SubResource( 24 )
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="Blocks/Step9"]
-autoplay = "m"
-anims/RESET = SubResource( 25 )
-anims/m = SubResource( 26 )
+autoplay = "scenesMoving Platformback"
+"anims/scenesMoving Platformback" = ExtResource( 5 )
 
-[connection signal="body_entered" from="EndArea" to="TimeLabel" method="_on_Area_body_entered"]
+[connection signal="body_entered" from="EndArea" to="TimeLabel" method="_on_EndArea_body_entered"]
